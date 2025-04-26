@@ -46,11 +46,17 @@ def main():
     gravity = 15
     g_timer = gravity
 
+<<<<<<< HEAD
     player_move = 2
     p_timer = player_move
 
+=======
+>>>>>>> 72cbc1ffcec73cb3387a6c4220c8facbc7cef250
     curr_time = time.time()
     prev_time = curr_time
+
+    player = 2
+    p_timer = player
 
     while running:
         for event in pygame.event.get():
@@ -73,19 +79,30 @@ def main():
             tps_timer = 0
 
             g_timer -= 1
+            p_timer -= 1
             if g_timer <= 0:
                 square.y += square_speed
                 g_timer = gravity
 
+<<<<<<< HEAD
             p_timer -= 1
             if p_timer <= 0:
                 p_timer = player_move
+=======
+            if p_timer <= 0 and square.y < 810:
+>>>>>>> 72cbc1ffcec73cb3387a6c4220c8facbc7cef250
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_LEFT]  or keys[pygame.K_a]:
                     square.x -= square_speed
                 if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                     square.x += square_speed
+<<<<<<< HEAD
 
+=======
+                if keys[pygame.K_DOWN]  or keys[pygame.K_s]:
+                    square.y += square_speed
+                p_timer = player
+>>>>>>> 72cbc1ffcec73cb3387a6c4220c8facbc7cef250
 
         # wall limits
         if square.x <= 200:
@@ -94,16 +111,13 @@ def main():
             square.x = 560
         if square.y >= 810:
             square.y = 810
-        
-       
 
         window.fill(BK)
 
         # draw square
         pygame.draw.rect(window, W, grid)
-        
-        #pygame.draw.rect(window, PB, I)
         pygame.draw.rect(window, PY, square)
+
 
         pygame.display.update()
 
