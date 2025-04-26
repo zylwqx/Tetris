@@ -9,19 +9,21 @@ def main():
     #display
     pygame.init()
     size = (x, y)
-    window = pygame.display.set_mode(size)
+    window = pygame.display.set_mode(size, pygame.RESIZABLE)
 
     BK = (0, 0, 0)
     W = (255, 255, 255)
     PY = (253, 253, 150)
     PB = (167, 199, 231)
 
+    TILE_SIZE = 40
+
 
     #game loop
     running = True
 
     #game grid
-    grid = pygame.Rect(200, 50, 400, 800)
+    grid = pygame.Rect(200, 50, TILE_SIZE*10,TILE_SIZE*20)
     #slot 1: 200
     #slot 2: 240
     #slot 3: 280
@@ -37,14 +39,15 @@ def main():
     tps_timer = 0
 
     #different pieces
-    square = pygame.Rect(360, 50, 40, 40)
-    square_speed = 40
+    square = pygame.Rect(360, 50, TILE_SIZE, TILE_SIZE)
+    square_speed = TILE_SIZE
 
     # Setup
     gravity = 15
     g_timer = gravity
 
-    p_timer 
+    player_move = 2
+    p_timer = player_move
 
     curr_time = time.time()
     prev_time = curr_time
@@ -53,11 +56,16 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            
+            if event.type == pygame.KEYDOWN:
+                # Restart game, will probably chnage this later to something less scuffed
+                if event.key == pygame.K_r:
+                    return main()
 
+        # Delta time
         delta_t = curr_time - prev_time
         prev_time = curr_time
         curr_time = time.time()
+
 
         tps_timer += delta_t
         # Handle events
@@ -69,14 +77,17 @@ def main():
                 square.y += square_speed
                 g_timer = gravity
 
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_LEFT]  or keys[pygame.K_a]:
-                square.x -= square_speed
-            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-                square.x += square_speed
+            p_timer -= 1
+            if p_timer <= 0:
+                p_timer = player_move
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_LEFT]  or keys[pygame.K_a]:
+                    square.x -= square_speed
+                if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                    square.x += square_speed
 
 
-        # limits
+        # wall limits
         if square.x <= 200:
             square.x = 200
         if square.x >= 560:
@@ -95,5 +106,7 @@ def main():
         pygame.draw.rect(window, PY, square)
 
         pygame.display.update()
+
+    return 0 # All good, exit game
 
 main()
