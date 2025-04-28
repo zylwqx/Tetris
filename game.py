@@ -46,7 +46,7 @@ def main():
     gravity = 15
     g_timer = gravity
 
-    player_move = 5
+    player_move = 2
     p_timer = player_move
 
     curr_time = time.time()
@@ -89,6 +89,8 @@ def main():
                     square.x += square_speed
                 if keys[pygame.K_DOWN]  or keys[pygame.K_s]:
                     square.y += square_speed
+
+        
 
         # wall limits
         if square.x <= 200:
