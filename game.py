@@ -46,7 +46,7 @@ def main():
     gravity = 15
     g_timer = gravity
 
-    player_move = 2
+    player_move = 5
     p_timer = player_move
 
     curr_time = time.time()
