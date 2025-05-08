@@ -139,8 +139,6 @@ class Tile(pygame.Rect):
         if falling_pos.y >= GRID_DIMS.y:
             falling_pos.y = GRID_DIMS.y-1
 
-        while 
-
         if not self.hide:
             self.draw(window)
         
@@ -214,7 +212,6 @@ def main():
 
 
         tps_timer += delta_t
-        print(Input.get_held("A_LEFT"))
         if Input.is_just_pressed("A_LEFT"):
             p_timer = player_move_delay
             falling_pos.x -= 1
@@ -227,6 +224,10 @@ def main():
         # Quick drop
         if Input.is_just_pressed("A_UP"):
             falling_pos.y += 100
+
+# current_tiile = Tile(..)
+#crrent_tile.fallingpos.x =efhiuefh
+#current_tile = nextt tile
 
         # Handle events
         if tps_timer >= 1/tps:
@@ -241,7 +242,6 @@ def main():
             p_timer -= 1
             if p_timer <= 0:
                 p_timer = player_move
-
                 if Input.is_held("A_LEFT"):
                     falling_pos.x -= 1
                 if Input.is_held("A_RIGHT"):
