@@ -29,15 +29,29 @@ class Vector2:
         if point != None:
             x = point[0]
             y = point[1]
-        self.x = x
-        self.y = y
+        self._x = x
+        self._y = y
+
+    @property
+    def x(self):
+        return self._x
+    @x.setter
+    def x(self, value):
+        self._x = value
+
+    @property
+    def y(self):
+        return self._y
+    @y.setter
+    def y(self, value):
+        self._y = value
 
     def normalise(self):
-        root = sqrt(self.x**2+self.y**2)
+        root = sqrt(self._x**2+self._y**2)
         if root == 0:
             return Vector2(0,0)
-        x = self.x/root
-        y = self.y/root
+        x = self._x/root
+        y = self._y/root
         return Vector2(x,y)
 
     @staticmethod
@@ -45,8 +59,14 @@ class Vector2:
         return Vector2.sum(vectors)*0.5
 
     def __add__(self, v2: "Vector2"):
-        x = self.x + v2.x
-        y = self.y + v2.y
+        x = self._x + v2.x
+        y = self._y + v2.y
+
+        return Vector2(x,y)
+
+    def __sub__(self, v2: "Vector2"):
+        x = self._x - v2.x
+        y = self._y - v2.y
 
         return Vector2(x,y)
 
@@ -54,19 +74,24 @@ class Vector2:
         return Vector2(sum((vec.x for vec in vectors)),sum((vec.y for vec in vectors)))
 
     def __mul__(self, scalar: int):
-        x = self.x*scalar 
-        y = self.y*scalar 
+        x = self._x*scalar 
+        y = self._y*scalar 
 
         return Vector2(x,y)
 
     def __str__(self):
-        return f"({self.x},{self.y})"
+        return f"({self._x},{self._y})"
 
     def __iter__(self):
-        return iter((self.x,self.y))
+        return iter((self._x,self._y))
 
     def __getitem__(self, index):
-        return self.y if index%2 else self.x
+        return self._y if index%2 else self._x
+
+
+
+    def copy(self):
+        return Vector2(self._x,self._y)
 
 
 class Raycast:
