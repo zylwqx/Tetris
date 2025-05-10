@@ -163,7 +163,6 @@ class Tile(pygame.Rect):
     def update(self, delta_t, window, redraw=True):
         # Collisions
         # >--------------------->
-        
         # Walls
 #        if self.grid_pos.x < 0:
 #            self.grid_pos.x = 0
@@ -461,7 +460,6 @@ def main():
             p_timer -= 1
             if p_timer <= 0 and current_tile and not hard_dropped:
                 p_timer = player_move
-
                 if Input.is_held("A_LEFT"):
                     current_tile.grid_pos.x -= 1
                 if Input.is_held("A_RIGHT"):
