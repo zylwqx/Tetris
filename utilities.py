@@ -58,6 +58,9 @@ class Vector2:
     def average(*vectors):
         return Vector2.sum(vectors)*0.5
 
+    def __equals__(self, v2: "Vector2"):
+        return self.x == v2.x and self.y == v2.y
+
     def __add__(self, v2: "Vector2"):
         x = self._x + v2.x
         y = self._y + v2.y

@@ -42,8 +42,13 @@ L_LAYOUT = """
 010
 011
 """
+I_LAYOUT = """
+1
+1
+1
+"""
 
-LAYOUTS = (SQUARE_LAYOUT,T_LAYOUT,L_LAYOUT)
+LAYOUTS = (SQUARE_LAYOUT,T_LAYOUT,L_LAYOUT, I_LAYOUT)
 
 # Colours
 BK = (0, 0, 0)
@@ -135,6 +140,7 @@ class Input:
 #game grid
 grid = pygame.Rect((wind_size.x-grid_size.x)/2, (wind_size.y-grid_size.y)/2,
                     grid_size.x, grid_size.y)
+grid_map = [[0 for i in range(GRID_DIMS.x)] for i in range(GRID_DIMS.y)]
 grid_drop_pos = Vector2(5,0)
 
 def grid_pos_to_coord(grid_pos):
@@ -200,8 +206,11 @@ class Tile(pygame.Rect):
 
         # Set position
         prev_pos = self.topleft
-        self.prev_grid_pos = self.grid_pos.copy()
         self.topleft = grid_pos_to_coord(self.grid_pos)
+
+        if self.grid_pos != self.prev_grid_pos:
+            update_grid_map_tile(self.prev_grid_pos, self.grid_pos)
+        self.prev_grid_pos = self.grid_pos.copy()
 
         # Uncomment for resetting lock delay if moving
         if not self.falling and self.topleft != prev_pos:
@@ -211,6 +220,17 @@ class Tile(pygame.Rect):
 
         if redraw:
             self.draw(window)
+
+def update_grid_map_tile(prev_pos, new_pos):
+    global grid_map
+    grid_map[new_pos.y][new_pos.x] = 2
+    if grid_map[prev_pos.y][prev_pos.x] != 2:
+        grid_map[prev_pos.y][prev_pos.x] = 0
+
+def update_grid_map():
+    global grid_map
+    grid_map = list(map(lambda x: list(map(lambda y: int(bool(y)), x)),
+                        grid_map))
 
 
 class TileList(list):
@@ -234,7 +254,7 @@ class Block:
         self._grid_pos = grid_drop_pos.copy()
         self._grid_pos.x -= len(convert[0])//2
 
-        self._bin_grid_pos = self._grid_pos.copy()
+        self._bin_grid_pos = None
         self.grid_pos_updated = False
         
         self.collision_list = collision_list
@@ -252,6 +272,7 @@ class Block:
                     drop_pos = self._grid_pos+Vector2(column, row)
                     self.tiles[row].append(
                         Tile(colour, drop_pos, collision_list))
+                    grid_map[drop_pos.y][drop_pos.x] = 1
                 else:
                     self.tiles[row].append(None)
 
@@ -270,49 +291,38 @@ class Block:
     @property
     def grid_pos(self):
         self.grid_pos_updated = True
-        self._bin_grid_pos = self._grid_pos.copy()
+        if not self._bin_grid_pos:
+            self._bin_grid_pos = self._grid_pos.copy()
+        print(self._grid_pos, self._bin_grid_pos)
         return self._bin_grid_pos
 
     @grid_pos.setter
     def grid_pos(self, new_value):
-        print()
         displacement = new_value-self._grid_pos
+        print(displacement)
         move_hor = True if displacement.x else False
         move_ver = True if displacement.y else False
 
         if not (move_hor or move_ver):
             return
-
         dx = 0 if displacement.x < 0 else -1
+        falls = displacement.y+1
 
         for row in range(len(self.tiles)):
             r = list(filter(lambda x: x is not None, self.tiles[row]))
 
             if move_hor:
-                if 0 <= r[dx].grid_pos.x+displacement.x <= GRID_DIMS.x-1:
-                    test = r[dx].copy()
-                    test.left = grid_pos_to_coord(
-                            r[dx].grid_pos+Vector2(displacement.x,0))[0]
-                    if test.collidelist(self.collision_list) != -1:
-                        move_hor = False
-                else:
+                if not(0 <= r[dx].grid_pos.x+displacement.x <= GRID_DIMS.x-1) or (
+                        grid_map[r[dx].grid_pos.y][r[dx].grid_pos.x+displacement.x]):
                     move_hor = False
 
 
-            if not ((row == 0 or row == len(self.tiles)-1) and move_ver):
+            if not ((not (row or falls) or row == len(self.tiles)-1 and falls) and move_ver):
                 continue
             for tile in r:
-                if not 0 <= tile.grid_pos.y+displacement.y <= GRID_DIMS.y-1:
-                    move_ver = False
-                    if self.falling:
-                        self.falling = False
-                        print("locking")
-                        pygame.time.set_timer(lock_delay_timer, int(1000*lock_delay/tps))
-                    break
-                test = tile.copy()
-                test.top = grid_pos_to_coord(
-                        tile.grid_pos+Vector2(0, displacement.y))[1]
-                if test.collidelist(self.collision_list) != -1:
+                #print(Vector2(tile.grid_pos.y+displacement.y,tile.grid_pos.x))
+                if (not 0 <= tile.grid_pos.y+displacement.y <= GRID_DIMS.y-1) or (
+                        grid_map[tile.grid_pos.y+displacement.y][tile.grid_pos.x]):
                     move_ver = False
                     if self.falling:
                         self.falling = False
@@ -323,15 +333,22 @@ class Block:
         if not (move_hor or move_ver):
             return
 
+        self.falling = True
+        pygame.time.set_timer(lock_delay_timer, int(1000*lock_delay/tps))
+        displacement.x *= move_hor
+        displacement.y *= move_ver
         self._grid_pos += displacement
         for tile in self.get_tiles_only():
             tile.grid_pos += displacement
+            update_grid_map_tile(tile.prev_grid_pos, tile.grid_pos)
+        update_grid_map()
 
     def update(self, delta_t, window, redraw=True):
         if self.grid_pos_updated:
             self.grid_pos_updated = False
-            print ("bin "+ str(self._bin_grid_pos))
+            #print ("bin "+ str(self._bin_grid_pos))
             self.grid_pos = self._bin_grid_pos
+            self._bin_grid_pos = None
         for tile in self.get_tiles_only():
             tile.update(delta_t,window,redraw)
 
@@ -355,6 +372,7 @@ def set_window_size(size=None, width=0, height=0):
     #square = pygame.Rect(falling_pos.x*tile_size+grid.left, falling_pos.y*tile_size+grid.top, tile_size, tile_size)
 
             #if not set(keybinds[action]).isdisjoint(held_keys_duration):
+
 def main():
     global falling_pos, held_keys
 
@@ -467,6 +485,8 @@ def main():
                 if Input.is_held("A_DOWN"):
                     g_timer = 1
         
+        # Update grid map
+        update_grid_map()
 
         # Draw
         window.fill(BK)
@@ -484,4 +504,8 @@ def main():
 
     return 0 # All good, exit game
 
-main()
+try:
+    main()
+finally:
+    pygame.quit()
+    input("\033[31m(Enter)")
