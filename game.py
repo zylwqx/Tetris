@@ -57,8 +57,7 @@ S_LAYOUT = """
 110
 """
 
-
-LAYOUTS = (SQUARE_LAYOUT,T_LAYOUT,L_LAYOUT, I_LAYOUT, Z_LAYOUT, S_LAYOUT)
+LAYOUTS = (SQUARE_LAYOUT, T_LAYOUT,L_LAYOUT, I_LAYOUT, Z_LAYOUT, S_LAYOUT)
 
 # Colours
 BK = (0, 0, 0)
@@ -452,6 +451,9 @@ def main():
                 pygame.time.set_timer(lock_delay_timer, 0)
                 print("locked")
                 if current_tile:
+                    if current_tile.grid_pos.y == 0:
+                        running = False
+                        break
                     test += current_tile.get_tiles_only()
                     current_tile = block_factory(random.choice(LAYOUTS), test)
 
