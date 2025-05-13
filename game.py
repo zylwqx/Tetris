@@ -47,8 +47,12 @@ I_LAYOUT = """
 1
 1
 """
+Z_LAYOUT = """
+110
+011
+"""
 
-LAYOUTS = (SQUARE_LAYOUT,T_LAYOUT,L_LAYOUT, I_LAYOUT)
+LAYOUTS = (SQUARE_LAYOUT,T_LAYOUT,L_LAYOUT, I_LAYOUT, Z_LAYOUT)
 
 # Colours
 BK = (0, 0, 0)
@@ -317,12 +321,14 @@ class Block:
                     move_hor = False
 
 
-            if not ((not (row or falls) or row == len(self.tiles)-1 and falls) and move_ver):
-                continue
+            #if not ((not (row or falls) or row == len(self.tiles)-1 and falls) and move_ver):
+                #continue
             for tile in r:
                 #print(Vector2(tile.grid_pos.y+displacement.y,tile.grid_pos.x))
                 if (not 0 <= tile.grid_pos.y+displacement.y <= GRID_DIMS.y-1) or (
                         grid_map[tile.grid_pos.y+displacement.y][tile.grid_pos.x]):
+                    if -1<row+displacement.y<len(self.tiles) and self.tiles[row+displacement.y][self.tiles[row].index(tile)]:
+                        continue
                     move_ver = False
                     if self.falling:
                         self.falling = False
