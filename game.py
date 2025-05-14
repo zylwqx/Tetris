@@ -207,6 +207,7 @@ class Tile(pygame.Rect):
         if redraw:
             self.draw(window)
 
+
 def update_grid_map_tile(prev_pos, new_pos):
     global grid_map
     grid_map[new_pos.y][new_pos.x] = 2
@@ -331,6 +332,7 @@ class Block:
             tile.grid_pos += displacement
             update_grid_map_tile(tile.prev_grid_pos, tile.grid_pos)
         update_grid_map()
+
 
     def update(self, delta_t, window, redraw=True):
         if self.grid_pos_updated:
