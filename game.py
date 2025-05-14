@@ -183,6 +183,7 @@ def set_window_size(size=None, width=0, height=0):
 #game grid
 grid = pygame.Rect((wind_size.x-grid_size.x)/2, (wind_size.y-grid_size.y)/2,
                     grid_size.x, grid_size.y)
+
 grid_map = [[0 for i in range(GRID_DIMS.x)] for i in range(GRID_DIMS.y)]
 grid_drop_pos = Vector2(5,0)
 
@@ -385,6 +386,7 @@ def check_clear_lines(tiles, window, start=0,end=None,amount=GRID_DIMS.y):
                     tiles[tile].grid_pos.y +=1
                     tiles[tile].update(0, window)
                 tile += 1
+    return cleared
 
 def main():
     global falling_pos, held_keys
@@ -406,6 +408,16 @@ def main():
     curr_time = time.time()
     prev_time = curr_time
 
+    tile_sprite = pygame.image.load("tile.png").convert_alpha()
+
+    points = 0
+
+    grid_bg = pygame.Surface(list(GRID_DIMS*tile_size))
+    grid_bg.fill(W)
+    for y in range(GRID_DIMS.y):
+        for x in range(GRID_DIMS.x):
+            grid_bg.blit(tile_sprite, (x*tile_size,y*tile_size))
+    #grid_bg.set_alpha(100)
 
     block_queue = [random.choice(LAYOUTS) for _ in range(4)]
     #block_queue = [LAYOUTS[0] for _ in range(40)]
@@ -458,7 +470,8 @@ def main():
                         running = False
                         break
                     test += current_tile.get_tiles_only()
-                    check_clear_lines(test, window,start=current_tile.grid_pos.y,amount=len(current_tile.tiles))
+                    points += len(check_clear_lines(test, window,start=current_tile.grid_pos.y,amount=len(current_tile.tiles)))
+                    print(points)
                     current_tile = block_factory(block_queue.pop(0), test)
                     block_queue.append(random.choice(LAYOUTS))
 
@@ -510,7 +523,9 @@ def main():
         window.fill(BK)
 
         # draw grid
-        pygame.draw.rect(window, W, grid)
+        #pygame.draw.rect(window, (255,255,255), grid)
+        window.blit(grid_bg,(grid.x,grid.y))
+
         # draw square
         if current_tile:
             current_tile.update(delta_t, window)
