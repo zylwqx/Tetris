@@ -29,7 +29,9 @@ square_speed = tile_size
 
 # Blocks
 O = """
-1
+111
+111
+111
 """
 
 T = """
@@ -107,8 +109,8 @@ S1 = """
 """
 
 
-
-LAYOUTS = (O, O, O, O, T, T1, T2, T3, L, L1, L2, L3, I, I1, I, I1, Z, Z1, S1, S, Z, Z1, S1, S)
+LAYOUTS = (O, I)
+# LAYOUTS = (O, O, O, O, T, T1, T2, T3, L, L1, L2, L3, I, I1, I, I1, Z, Z1, S1, S, Z, Z1, S1, S)
 
 # Colours
 BK = (0, 0, 0)
@@ -483,11 +485,11 @@ def main():
                 pygame.time.set_timer(lock_delay_timer, 0)
                 print("locked")
                 if current_tile:
-                    if current_tile.grid_pos.y == 0:
+                    if current_tile.grid_pos.y == -1:
                         running = False
                         break
                     test += current_tile.get_tiles_only()
-                    check_clear_lines(test, window,start=current_tile.grid_pos.y,amount=len(current_tile.tiles))
+                    check_clear_lines(test, window)#,start=current_tile.grid_pos.y,amount=len(current_tile.tiles))
                     current_tile = block_factory(block_queue.pop(0), test)
                     block_queue.append(random.choice(LAYOUTS))
 
@@ -545,8 +547,12 @@ def main():
             current_tile.update(delta_t, window)
 
         test.draw(window)
-        pygame.draw.rect(window, BK, )
 
+        black_rect = pygame.Rect((grid.x,grid.y-tile_size),(GRID_DIMS.x*tile_size, tile_size))
+        bs = pygame.Surface((GRID_DIMS.x*tile_size, tile_size))
+        bs.set_alpha(200)
+        bs.fill((255,0,0))
+        window.blit(bs, black_rect)
 
         master_window.blit(pygame.transform.scale(window, master_window.get_rect().size), (0, 0))
         pygame.display.update()
