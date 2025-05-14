@@ -485,6 +485,20 @@ def main():
                 if current_tile:
                     if current_tile.grid_pos.y == 0:
                         running = False
+                        score_text1 = font.render(f"GAME OVER!", True, red)
+                        score_text2 = font.render(f"TIMES UP!", True, red)
+                        score_text3 = font.render(f"SCORE:", True, (255, 255, 255))
+                        againtext = font.render(f"Press Enter to Play Again.", True, (255, 255, 255))
+                        leavetext = font.render(f"Press Esc to Leave.", True, (255, 255, 255))
+                        window.blit(score_text1, (10, 10))
+                        window.blit(score_text2, (10, 40))
+                        window.blit(score_text3, (10, 70))
+                        window.blit(againtext, (10, 100))
+                        window.blit(leavetext, (10, 130))
+                        if keys[pg.K_ESCAPE]:
+                            exit()
+                        elif keys[pg.K_RETURN]:
+                            main()
                         break
                     test += current_tile.get_tiles_only()
                     check_clear_lines(test, window,start=current_tile.grid_pos.y,amount=len(current_tile.tiles))
