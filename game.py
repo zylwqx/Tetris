@@ -28,37 +28,56 @@ grid_size = Vector2(tile_size*GRID_DIMS.x, tile_size*GRID_DIMS.y)
 square_speed = tile_size
 
 # Blocks
-SQUARE_LAYOUT = """
+O = """
 11
 11
 """
 
-T_LAYOUT = """
-
-00100
-01110
+T = """
+010
+111
 """
-L_LAYOUT = """
+
+T1 = """
+01
+11
+01
+"""
+
+T2 = """
+111
+010
+"""
+
+T3 = """
+10
+11
+10
+"""
+
+L = """
 010
 010
 011
 """
-I_LAYOUT = """
+I = """
 1
 1
 1
 1
 """
-Z_LAYOUT = """
+Z = """
 110
 011
 """
-S_LAYOUT = """
+S = """
 011
 110
 """
 
-LAYOUTS = (SQUARE_LAYOUT,T_LAYOUT,L_LAYOUT, I_LAYOUT, Z_LAYOUT, S_LAYOUT)
+
+
+LAYOUTS = (O, T, T1, T2, T3, L, I, Z, S)
 
 # Colours
 BK = (0, 0, 0)
@@ -435,6 +454,9 @@ def main():
                 pygame.time.set_timer(lock_delay_timer, 0)
                 print("locked")
                 if current_tile:
+                    if current_tile.grid_pos.y == 0:
+                        running = False
+                        break
                     test += current_tile.get_tiles_only()
                     check_clear_lines(test, window,start=current_tile.grid_pos.y,amount=len(current_tile.tiles))
                     current_tile = block_factory(block_queue.pop(0), test)
