@@ -28,36 +28,56 @@ grid_size = Vector2(tile_size*GRID_DIMS.x, tile_size*GRID_DIMS.y)
 square_speed = tile_size
 
 # Blocks
-SQUARE_LAYOUT = """
+O = """
 11
 11
 """
 
-T_LAYOUT = """
+T = """
 010
 111
 """
-L_LAYOUT = """
+
+T1 = """
+01
+11
+01
+"""
+
+T2 = """
+111
+010
+"""
+
+T3 = """
+10
+11
+10
+"""
+
+L = """
 010
 010
 011
 """
-I_LAYOUT = """
+I = """
+1
 1
 1
 1
 1
 """
-Z_LAYOUT = """
+Z = """
 110
 011
 """
-S_LAYOUT = """
+S = """
 011
 110
 """
 
-LAYOUTS = (SQUARE_LAYOUT, T_LAYOUT,L_LAYOUT, I_LAYOUT, Z_LAYOUT, S_LAYOUT)
+
+LAYOUTS = (O, T, T1, T2, T3, L, I, Z, S)
 
 # Colours
 BK = (0, 0, 0)
@@ -146,9 +166,24 @@ class Input:
 
 #----------------------------------->
 
+def set_window_size(size=None, width=0, height=0):
+    global wind_size, tile_size, grid_size, grid, square_speed, square
+    if size == None:
+        size = (width,height)
+
+    wind_size = Vector2(point=size)
+
+    tile_size = wind_size.y/22.5
+    grid_size = Vector2(tile_size*GRID_DIMS.x, tile_size*GRID_DIMS.y)
+    square_speed = tile_size
+
+    grid = pygame.Rect((wind_size.x-grid_size.x)/2, (wind_size.y-grid_size.y)/2,
+                       grid_size.x, grid_size.y)
+
 #game grid
 grid = pygame.Rect((wind_size.x-grid_size.x)/2, (wind_size.y-grid_size.y)/2,
                     grid_size.x, grid_size.y)
+
 grid_map = [[0 for i in range(GRID_DIMS.x)] for i in range(GRID_DIMS.y)]
 grid_drop_pos = Vector2(5,0)
 
@@ -172,47 +207,10 @@ class Tile(pygame.Rect):
     def draw(self, window):
         if self.hide:
             return
-        pygame.draw.rect(window, self.colour, self)
+        pygame.draw.rect(window,self.colour,self)
         window.blit(self.sprite, self)
 
     def update(self, delta_t, window, redraw=True):
-        # Collisions
-        # >--------------------->
-        # Walls
-#        if self.grid_pos.x < 0:
-#            self.grid_pos.x = 0
-#
-#        elif self.grid_pos.x >= GRID_DIMS.x:
-#            self.grid_pos.x = GRID_DIMS.x-1
-#
-#        if self.grid_pos.y > GRID_DIMS.y-1:
-#            self.grid_pos.y = GRID_DIMS.y-1
-#            if self.falling:
-#                self.falling = False
-#                print("locking")
-#                pygame.time.set_timer(lock_delay_timer, int(1000*lock_delay/tps))
-#
-#        # Tiles
-#        test = self.copy()
-#        test.topleft = grid_pos_to_coord(self.grid_pos)
-#        
-#        if self.collision_list and (c:=test.collidelist(self.collision_list)) != -1:
-#            print(test.collidelist(self.collision_list))
-#            if self.grid_pos.x != self.prev_grid_pos.x:
-#                self.grid_pos.x = self.prev_grid_pos.x
-#
-#            if self.grid_pos.y != self.prev_grid_pos.y:
-#                c_y = self.collision_list[c].grid_pos.y
-#                if self.prev_grid_pos.y < c_y:
-#                    self.grid_pos.y = c_y-1
-#                else:
-#                    self.grid_pos.y = c_y+1
-#                if self.falling:
-#                    self.falling = False
-#                    print("locking")
-#                    pygame.time.set_timer(lock_delay_timer, int(1000*lock_delay/tps))
-        # >--------------------->
-
         # Set position
         prev_pos = self.topleft
         self.topleft = grid_pos_to_coord(self.grid_pos)
@@ -226,9 +224,9 @@ class Tile(pygame.Rect):
             self.falling = True
             pygame.time.set_timer(lock_delay_timer, 0)
 
-
         if redraw:
             self.draw(window)
+
 
 def update_grid_map_tile(prev_pos, new_pos):
     global grid_map
@@ -326,18 +324,21 @@ class Block:
                     move_hor = False
 
 
-            if not ((not (row or falls) or row == len(self.tiles)-1 and falls) and move_ver):
-                continue
-            for tile in r:
-                #print(Vector2(tile.grid_pos.y+displacement.y,tile.grid_pos.x))
-                if (not 0 <= tile.grid_pos.y+displacement.y <= GRID_DIMS.y-1) or (
-                        grid_map[tile.grid_pos.y+displacement.y][tile.grid_pos.x]):
-                    move_ver = False
-                    if self.falling:
-                        self.falling = False
-                        print("locking")
-                        pygame.time.set_timer(lock_delay_timer, int(1000*lock_delay/tps))
-                    break
+            #if not ((not (row or falls) or row == len(self.tiles)-1 and falls) and move_ver):
+                #continue
+            if move_ver:
+                for tile in r:
+                    #print(Vector2(tile.grid_pos.y+displacement.y,tile.grid_pos.x))
+                    if (not 0 <= tile.grid_pos.y+displacement.y <= GRID_DIMS.y-1) or (
+                            grid_map[tile.grid_pos.y+displacement.y][tile.grid_pos.x]):
+                        if -1<row+displacement.y<len(self.tiles) and self.tiles[row+displacement.y][self.tiles[row].index(tile)]:
+                            continue
+                        move_ver = False
+                        if self.falling:
+                            self.falling = False
+                            print("locking")
+                            pygame.time.set_timer(lock_delay_timer, int(1000*lock_delay/tps))
+                        break
 
         if not (move_hor or move_ver):
             return
@@ -352,6 +353,7 @@ class Block:
             update_grid_map_tile(tile.prev_grid_pos, tile.grid_pos)
         update_grid_map()
 
+
     def update(self, delta_t, window, redraw=True):
         if self.grid_pos_updated:
             self.grid_pos_updated = False
@@ -365,22 +367,26 @@ class Block:
 def block_factory(layout, collision_list):
     return Block(layout, [random.randint(0,255) for i in range(3)], collision_list)
 
-def set_window_size(size=None, width=0, height=0):
-    global wind_size, tile_size, grid_size, grid, square_speed, square
-    if size == None:
-        size = (width,height)
+def check_clear_lines(tiles, window, start=0,end=None,amount=GRID_DIMS.y):
+    global grid_map
+    cleared = []
+    for i in range(amount):
+        row = start+i
+        if all(grid_map[row]):
+            cleared.append(row)
 
-    wind_size = Vector2(point=size)
-
-    tile_size = wind_size.y/22.5
-    grid_size = Vector2(tile_size*GRID_DIMS.x, tile_size*GRID_DIMS.y)
-    square_speed = tile_size
-
-    grid = pygame.Rect((wind_size.x-grid_size.x)/2, (wind_size.y-grid_size.y)/2,
-                       grid_size.x, grid_size.y)
-    #square = pygame.Rect(falling_pos.x*tile_size+grid.left, falling_pos.y*tile_size+grid.top, tile_size, tile_size)
-
-            #if not set(keybinds[action]).isdisjoint(held_keys_duration):
+            del grid_map[row]
+            grid_map.insert(0, [0 for _ in range(GRID_DIMS.x)])
+            tile = 0
+            while tile < len(tiles):
+                if tiles[tile].grid_pos.y == row:
+                    del tiles[tile]
+                    tile -= 1
+                elif tiles[tile].grid_pos.y < row:
+                    tiles[tile].grid_pos.y +=1
+                    tiles[tile].update(0, window)
+                tile += 1
+    return cleared
 
 def main():
     global falling_pos, held_keys
@@ -402,13 +408,27 @@ def main():
     curr_time = time.time()
     prev_time = curr_time
 
+    tile_sprite = pygame.image.load("tile.png").convert_alpha()
 
+    points = 0
+
+    grid_bg = pygame.Surface(list(GRID_DIMS*tile_size))
+    grid_bg.fill(W)
+    for y in range(GRID_DIMS.y):
+        for x in range(GRID_DIMS.x):
+            grid_bg.blit(tile_sprite, (x*tile_size,y*tile_size))
+    #grid_bg.set_alpha(100)
+
+    block_queue = [random.choice(LAYOUTS) for _ in range(4)]
+    #block_queue = [LAYOUTS[0] for _ in range(40)]
     test = TileList()
-    current_tile = Block(SQUARE_LAYOUT, (255,0,0), test)
+    current_tile = block_factory(block_queue.pop(0), test)
 
     hard_dropped = False
 
+    clock = pygame.time.Clock()
     while running:
+        clock.tick(60)
         # Delta time
         delta_t = curr_time - prev_time
         prev_time = curr_time
@@ -432,13 +452,6 @@ def main():
                 # Game Input
                 if event.key not in held_keys_duration:
                     held_keys_duration[event.key] = 0
-                if event.key == pygame.K_i:
-                    hard_dropped = False
-                    pygame.time.set_timer(lock_delay_timer, 0)
-                    print("locked")
-                    if current_tile:
-                        test.append(current_tile)
-                        current_tile = Tile((100,200,38), test)
 
 
             if event.type == pygame.KEYUP:
@@ -446,6 +459,8 @@ def main():
                 held_keys_duration.pop(event.key)
 
             # Timers
+
+            # Block locks
             if event.type == lock_delay_timer or hard_dropped:
                 hard_dropped = False
                 pygame.time.set_timer(lock_delay_timer, 0)
@@ -455,7 +470,11 @@ def main():
                         running = False
                         break
                     test += current_tile.get_tiles_only()
-                    current_tile = block_factory(random.choice(LAYOUTS), test)
+                    points += len(check_clear_lines(test, window,start=current_tile.grid_pos.y,amount=len(current_tile.tiles)))
+                    print(points)
+                    current_tile = block_factory(block_queue.pop(0), test)
+                    block_queue.append(random.choice(LAYOUTS))
+
 
         # Click inputs
         if current_tile:
@@ -504,7 +523,9 @@ def main():
         window.fill(BK)
 
         # draw grid
-        pygame.draw.rect(window, W, grid)
+        #pygame.draw.rect(window, (255,255,255), grid)
+        window.blit(grid_bg,(grid.x,grid.y))
+
         # draw square
         if current_tile:
             current_tile.update(delta_t, window)
