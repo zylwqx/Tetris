@@ -323,18 +323,19 @@ class Block:
 
             #if not ((not (row or falls) or row == len(self.tiles)-1 and falls) and move_ver):
                 #continue
-            for tile in r:
-                #print(Vector2(tile.grid_pos.y+displacement.y,tile.grid_pos.x))
-                if (not 0 <= tile.grid_pos.y+displacement.y <= GRID_DIMS.y-1) or (
-                        grid_map[tile.grid_pos.y+displacement.y][tile.grid_pos.x]):
-                    if -1<row+displacement.y<len(self.tiles) and self.tiles[row+displacement.y][self.tiles[row].index(tile)]:
-                        continue
-                    move_ver = False
-                    if self.falling:
-                        self.falling = False
-                        print("locking")
-                        pygame.time.set_timer(lock_delay_timer, int(1000*lock_delay/tps))
-                    break
+            if move_ver:
+                for tile in r:
+                    #print(Vector2(tile.grid_pos.y+displacement.y,tile.grid_pos.x))
+                    if (not 0 <= tile.grid_pos.y+displacement.y <= GRID_DIMS.y-1) or (
+                            grid_map[tile.grid_pos.y+displacement.y][tile.grid_pos.x]):
+                        if -1<row+displacement.y<len(self.tiles) and self.tiles[row+displacement.y][self.tiles[row].index(tile)]:
+                            continue
+                        move_ver = False
+                        if self.falling:
+                            self.falling = False
+                            print("locking")
+                            pygame.time.set_timer(lock_delay_timer, int(1000*lock_delay/tps))
+                        break
 
         if not (move_hor or move_ver):
             return
