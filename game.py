@@ -7,9 +7,9 @@ from utilities import *
 
 pygame.init()
 
-
 # Settings
 wind_size = Vector2(800, 900)
+font = pygame.font.Font(None, 40)
 
 GRID_DIMS = Vector2(10,20)
 VIDEO_FLAGS = pygame.HWSURFACE|pygame.DOUBLEBUF|pygame.RESIZABLE
@@ -215,7 +215,7 @@ def set_window_size(size=None, width=0, height=0):
 grid = pygame.Rect((wind_size.x-grid_size.x)/2, (wind_size.y-grid_size.y)/2,
                     grid_size.x, grid_size.y)
 grid_map = [[0 for i in range(GRID_DIMS.x)] for i in range(GRID_DIMS.y)]
-grid_drop_pos = Vector2(5,0)
+grid_drop_pos = Vector2(5,-1)
 
 def grid_pos_to_coord(grid_pos):
     return (grid.left+grid_pos.x*tile_size, grid.top+grid_pos.y*tile_size)
@@ -485,20 +485,6 @@ def main():
                 if current_tile:
                     if current_tile.grid_pos.y == 0:
                         running = False
-                        score_text1 = font.render(f"GAME OVER!", True, red)
-                        score_text2 = font.render(f"TIMES UP!", True, red)
-                        score_text3 = font.render(f"SCORE:", True, (255, 255, 255))
-                        againtext = font.render(f"Press Enter to Play Again.", True, (255, 255, 255))
-                        leavetext = font.render(f"Press Esc to Leave.", True, (255, 255, 255))
-                        window.blit(score_text1, (10, 10))
-                        window.blit(score_text2, (10, 40))
-                        window.blit(score_text3, (10, 70))
-                        window.blit(againtext, (10, 100))
-                        window.blit(leavetext, (10, 130))
-                        if keys[pg.K_ESCAPE]:
-                            exit()
-                        elif keys[pg.K_RETURN]:
-                            main()
                         break
                     test += current_tile.get_tiles_only()
                     check_clear_lines(test, window,start=current_tile.grid_pos.y,amount=len(current_tile.tiles))
@@ -559,6 +545,8 @@ def main():
             current_tile.update(delta_t, window)
 
         test.draw(window)
+        pygame.draw.rect(window, BK, )
+
 
         master_window.blit(pygame.transform.scale(window, master_window.get_rect().size), (0, 0))
         pygame.display.update()
