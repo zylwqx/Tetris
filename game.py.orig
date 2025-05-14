@@ -109,8 +109,8 @@ S1 = """
 """
 
 
-#LAYOUTS = (O, I)
-LAYOUTS = (O, O, T, T1, T2, T3, L, L1, L2, L3, I, I1, I, I1, Z, Z1, S1, S, Z, Z1, S1, S)
+LAYOUTS = (O, I)
+# LAYOUTS = (O, O, O, O, T, T1, T2, T3, L, L1, L2, L3, I, I1, I, I1, Z, Z1, S1, S, Z, Z1, S1, S)
 
 # Colours
 BK = (0, 0, 0)
@@ -217,7 +217,7 @@ def set_window_size(size=None, width=0, height=0):
 grid = pygame.Rect((wind_size.x-grid_size.x)/2, (wind_size.y-grid_size.y)/2,
                     grid_size.x, grid_size.y)
 
-grid_map = [[0 for i in range(GRID_DIMS.x)] for i in range(GRID_DIMS.y+1)]
+grid_map = [[0 for i in range(GRID_DIMS.x)] for i in range(GRID_DIMS.y)]
 grid_drop_pos = Vector2(5,-1)
 
 def grid_pos_to_coord(grid_pos):
@@ -385,9 +385,6 @@ class Block:
             tile.grid_pos += displacement
             update_grid_map_tile(tile.prev_grid_pos, tile.grid_pos)
         update_grid_map()
-        print("------------")
-        print('\n'.join(map(lambda x: ''.join(map(str,x)),grid_map)))
-        print("------------")
 
 
     def update(self, delta_t, window, redraw=True):
@@ -411,19 +408,17 @@ def check_clear_lines(tiles, window, start=0,end=None,amount=GRID_DIMS.y):
         if all(grid_map[row]):
             cleared.append(row)
 
-    print(cleared)
-    for row in sorted(cleared):
-        del grid_map[row]
-        grid_map.insert(0, [0 for _ in range(GRID_DIMS.x)])
-        tile = 0
-        while tile < len(tiles):
-            if tiles[tile].grid_pos.y == row:
-                del tiles[tile]
-                tile -= 1
-            elif tiles[tile].grid_pos.y < row:
-                tiles[tile].grid_pos.y += 1
-                tiles[tile].update(1, window)
-            tile += 1
+            del grid_map[row]
+            grid_map.insert(0, [0 for _ in range(GRID_DIMS.x)])
+            tile = 0
+            while tile < len(tiles):
+                if tiles[tile].grid_pos.y == row:
+                    del tiles[tile]
+                    tile -= 1
+                elif tiles[tile].grid_pos.y < row:
+                    tiles[tile].grid_pos.y +=1
+                    tiles[tile].update(0, window)
+                tile += 1
     return cleared
 
 def main():
@@ -466,7 +461,7 @@ def main():
 
     clock = pygame.time.Clock()
     while running:
-        clock.tick(30)
+        clock.tick(60)
         # Delta time
         delta_t = curr_time - prev_time
         prev_time = curr_time
@@ -508,8 +503,12 @@ def main():
                         running = False
                         break
                     test += current_tile.get_tiles_only()
+<<<<<<< HEAD
+                    check_clear_lines(test, window)#,start=current_tile.grid_pos.y,amount=len(current_tile.tiles))
+=======
                     points += len(check_clear_lines(test, window,start=current_tile.grid_pos.y,amount=len(current_tile.tiles)))
                     print(points)
+>>>>>>> dd3dba8bccb4bb297dffc4ff22a8579e0f5792e5
                     current_tile = block_factory(block_queue.pop(0), test)
                     block_queue.append(random.choice(LAYOUTS))
 
@@ -570,11 +569,11 @@ def main():
 
         test.draw(window)
 
-        danger_rect = pygame.Rect((grid.x,grid.y-tile_size),(GRID_DIMS.x*tile_size, tile_size))
-        bs = pygame.Surface()
-        bs.set_alpha(100)
-        bs.fill((255,50,50))
-        window.blit(bs, danger_rect)
+        black_rect = pygame.Rect((grid.x,grid.y-tile_size),(GRID_DIMS.x*tile_size, tile_size))
+        bs = pygame.Surface((GRID_DIMS.x*tile_size, tile_size))
+        bs.set_alpha(200)
+        bs.fill((255,0,0))
+        window.blit(bs, black_rect)
 
         master_window.blit(pygame.transform.scale(window, master_window.get_rect().size), (0, 0))
         pygame.display.update()
