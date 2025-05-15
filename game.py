@@ -28,10 +28,15 @@ grid_size = Vector2(tile_size*GRID_DIMS.x, tile_size*GRID_DIMS.y)
 square_speed = tile_size
 
 # Blocks
+DONUT = {"""
+111
+101
+111
+"""}
+
 O = """
-111
-111
-111
+11
+11
 """
 
 T = """
@@ -109,7 +114,16 @@ S1 = """
 """
 
 #LAYOUTS = (O, I)
-LAYOUTS = (O, O, T, T1, T2, T3, L, L1, L2, L3, I, I1, I, I1, Z, Z1, S1, S, Z, Z1, S1, S)
+LTI = LootTableItem
+LAYOUTS = LootTable(
+    LTI(DONUT,1),
+    LTI(O,10),
+    LTI(T, 5/2), LTI(T1, 5/2), LTI(T2, 5/2),LTI(T3, 5/2),
+    LTI(L, 5/2), LTI(L1, 5/2), LTI(L2, 5/2), LTI(L3, 5/2),
+    LTI(I, 5), LTI(I1, 5),
+    LTI(Z, 5), LTI(Z1, 5),
+    LTI(S, 5), LTI(S1, 5),)
+
 
 # Colours
 BK = (0, 0, 0)
@@ -454,9 +468,12 @@ def main():
     for y in range(GRID_DIMS.y):
         for x in range(GRID_DIMS.x):
             grid_bg.blit(tile_sprite, (x*tile_size,y*tile_size))
-    #grid_bg.set_alpha(100)
+    danger_rect = pygame.Rect((grid.x,grid.y-tile_size),(GRID_DIMS.x*tile_size, tile_size))
+    bs = pygame.Surface(danger_rect.size)
+    bs.set_alpha(100)
+    bs.fill((255,50,50))
 
-    block_queue = [random.choice(LAYOUTS) for _ in range(4)]
+    block_queue = [LAYOUTS.random_item() for _ in range(4)]
     #block_queue = [LAYOUTS[0] for _ in range(40)]
     test = TileList()
     current_tile = block_factory(block_queue.pop(0), test)
@@ -510,7 +527,7 @@ def main():
                     points += len(check_clear_lines(test, window,start=current_tile.grid_pos.y,amount=len(current_tile.tiles)))
                     print(points)
                     current_tile = block_factory(block_queue.pop(0), test)
-                    block_queue.append(random.choice(LAYOUTS))
+                    block_queue.append(LAYOUTS.random_item())
 
 
         # Click inputs
@@ -569,10 +586,6 @@ def main():
 
         test.draw(window)
 
-        danger_rect = pygame.Rect((grid.x,grid.y-tile_size),(GRID_DIMS.x*tile_size, tile_size))
-        bs = pygame.Surface()
-        bs.set_alpha(100)
-        bs.fill((255,50,50))
         window.blit(bs, danger_rect)
 
         master_window.blit(pygame.transform.scale(window, master_window.get_rect().size), (0, 0))

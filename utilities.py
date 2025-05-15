@@ -174,3 +174,28 @@ class Progressbar:
         pygame.draw.rect(self.bar, self.fore_colour, self.progress_rect)
         window.blit(self.bar,self.rect)
 
+
+class LootTableItem:
+    def __init__(self, value, weight):
+        self.item = value
+        self.weight = float(weight)
+
+
+class LootTable:
+    def __init__(self, *args: LootTableItem):
+        self.table =  args
+
+        self.total_weight = 0
+        self.cumululative_weights = []
+    	
+        for item in self.table:
+            self.total_weight += item.weight
+            self.cumululative_weights.append([item.item,self.total_weight])
+
+    def random_item(self):
+    	chance_roll = random.uniform(0,self.total_weight)
+    	for weight in self.cumululative_weights:
+    		if chance_roll < weight[1]:
+    			return weight[0]
+    	
+    	return None
