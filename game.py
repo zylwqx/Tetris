@@ -316,6 +316,7 @@ class Block:
         self.tiles = []
         self.only_tiles = None
 
+
         for row in range(len(convert)):
             if not convert[row].strip():
                 continue
@@ -325,9 +326,21 @@ class Block:
                     drop_pos = self._grid_pos+Vector2(column, row)
                     self.tiles[row].append(
                         Tile(colour, drop_pos, collision_list))
-                    grid_map[drop_pos.y][drop_pos.x] = 1
                 else:
                     self.tiles[row].append(None)
+        self.icon_surf = pygame.Surface((tile_size*len(self.tiles[0]),tile_size*len(self.tiles)))
+        for y in range(len(self.tiles)):
+            for x in range(len(self.tiles[y])):
+                if not self.tiles[y][x]:
+                    continue
+                tile = self.tiles[y][x]
+                tile.topleft = (x*tile_size, y*tile_size)
+                tile.draw(self.icon_surf)
+
+    def spawn(self):
+        for tile in self.get_tiles_only():
+            grid_map[tile.grid_pos.y][tile.grid_pos.x] = 1
+
 
     def get_tiles_only(self):
         if self.only_tiles:
@@ -402,6 +415,8 @@ class Block:
         print('\n'.join(map(lambda x: ''.join(map(str,x)),grid_map)))
         print("------------")
 
+    def draw(self, window, surf=None, pos =(0,0)):
+        window.blit(pygame.transform.scale(self.icon_surf, list(Vector2(point=self.icon_surf.get_size())*(surf.get_height()/tile_size))),pos)
 
     def update(self, delta_t, window, redraw=True):
         if self.grid_pos_updated:
@@ -473,10 +488,12 @@ def main():
     bs.set_alpha(100)
     bs.fill((255,50,50))
 
-    block_queue = [LAYOUTS.random_item() for _ in range(4)]
-    #block_queue = [LAYOUTS[0] for _ in range(40)]
     test = TileList()
-    current_tile = block_factory(block_queue.pop(0), test)
+    block_queue = [block_factory(LAYOUTS.random_item(), test) for _ in range(4)]
+    #block_queue = [LAYOUTS[0] for _ in range(40)]
+    current_tile = block_queue.pop(0)
+    block_factory(LAYOUTS.random_item(), test)
+    surface_queue = [pygame.Surface((20,20))for _ in block_queue]
 
     hard_dropped = False
 
@@ -526,8 +543,8 @@ def main():
                     test += current_tile.get_tiles_only()
                     points += len(check_clear_lines(test, window,start=current_tile.grid_pos.y,amount=len(current_tile.tiles)))
                     print(points)
-                    current_tile = block_factory(block_queue.pop(0), test)
-                    block_queue.append(LAYOUTS.random_item())
+                    current_tile = block_queue.pop(0)
+                    block_queue.append(block_factory(LAYOUTS.random_item(), test))
 
 
         # Click inputs
@@ -585,6 +602,11 @@ def main():
             current_tile.update(delta_t, window)
 
         test.draw(window)
+
+        temp_height = 50
+        for i in range(len(block_queue)):
+            block_queue[i].draw(window, surface_queue[i], (50,temp_height))
+            temp_height += block_queue[i].icon_surf.get_height()*(surface_queue[i].get_height()/tile_size) + 20
 
         window.blit(bs, danger_rect)
 
