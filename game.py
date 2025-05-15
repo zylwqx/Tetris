@@ -28,11 +28,11 @@ grid_size = Vector2(tile_size*GRID_DIMS.x, tile_size*GRID_DIMS.y)
 square_speed = tile_size
 
 # Blocks
-DONUT = {"""
+DONUT = """
 111
 101
 111
-"""}
+"""
 
 O = """
 11
