@@ -35,8 +35,9 @@ DONUT = """
 """
 
 O = """
-11
-11
+111
+111
+111
 """
 
 T = """
@@ -112,17 +113,27 @@ S1 = """
 11
 01
 """
+SLASH = """
+01
+10
+"""
+SLASH1 = """
+10
+01
+"""
 
 #LAYOUTS = (O, I)
 LTI = LootTableItem
 LAYOUTS = LootTable(
     LTI(DONUT,1),
-    LTI(O,10),
+    LTI(O, 10),
     LTI(T, 5/2), LTI(T1, 5/2), LTI(T2, 5/2),LTI(T3, 5/2),
     LTI(L, 5/2), LTI(L1, 5/2), LTI(L2, 5/2), LTI(L3, 5/2),
     LTI(I, 5), LTI(I1, 5),
     LTI(Z, 5), LTI(Z1, 5),
-    LTI(S, 5), LTI(S1, 5),)
+    LTI(S, 5), LTI(S1, 5),
+    LTI(SLASH, 5), LTI(SLASH1, 5),
+    )
 
 
 # Colours
@@ -230,7 +241,7 @@ def set_window_size(size=None, width=0, height=0):
 grid = pygame.Rect((wind_size.x-grid_size.x)/2, (wind_size.y-grid_size.y)/2,
                     grid_size.x, grid_size.y)
 
-grid_map = [[0 for i in range(GRID_DIMS.x)] for i in range(GRID_DIMS.y+1)]
+grid_map = [[0 for i in range(GRID_DIMS.x)] for i in range(GRID_DIMS.y)]
 grid_drop_pos = Vector2(5,-1)
 
 def grid_pos_to_coord(grid_pos):
@@ -256,12 +267,12 @@ class Tile(pygame.Rect):
         pygame.draw.rect(window,self.colour,self)
         window.blit(self.sprite, self)
 
-    def update(self, delta_t, window, redraw=True):
+    def update(self, delta_t, window, redraw=True, update_grid=True):
         # Set position
         prev_pos = self.topleft
         self.topleft = grid_pos_to_coord(self.grid_pos)
 
-        if self.grid_pos != self.prev_grid_pos:
+        if update_grid and self.grid_pos != self.prev_grid_pos:
             update_grid_map_tile(self.prev_grid_pos, self.grid_pos)
         self.prev_grid_pos = self.grid_pos.copy()
 
@@ -276,8 +287,9 @@ class Tile(pygame.Rect):
 
 def update_grid_map_tile(prev_pos, new_pos):
     global grid_map
-    grid_map[new_pos.y][new_pos.x] = 2
-    if grid_map[prev_pos.y][prev_pos.x] != 2:
+    if new_pos.y >-1:
+        grid_map[new_pos.y][new_pos.x] = 2
+    if grid_map[prev_pos.y][prev_pos.x] != 2 and prev_pos.y > -1:
         grid_map[prev_pos.y][prev_pos.x] = 0
 
 def update_grid_map():
@@ -306,6 +318,7 @@ class Block:
 
         self._grid_pos = grid_drop_pos.copy()
         self._grid_pos.x -= len(convert[0])//2
+        self._grid_pos.y -= len(convert)-1
 
         self._bin_grid_pos = None
         self.grid_pos_updated = False
@@ -379,17 +392,15 @@ class Block:
 
             if move_hor:
                 if not(0 <= r[dx].grid_pos.x+displacement.x <= GRID_DIMS.x-1) or (
-                        grid_map[r[dx].grid_pos.y][r[dx].grid_pos.x+displacement.x]):
+                        r[dx].grid_pos.y > -1 and grid_map[r[dx].grid_pos.y][r[dx].grid_pos.x+displacement.x]):
                     move_hor = False
 
 
-            #if not ((not (row or falls) or row == len(self.tiles)-1 and falls) and move_ver):
-                #continue
             if move_ver:
                 for tile in r:
                     #print(Vector2(tile.grid_pos.y+displacement.y,tile.grid_pos.x))
-                    if (not 0 <= tile.grid_pos.y+displacement.y <= GRID_DIMS.y-1) or (
-                            grid_map[tile.grid_pos.y+displacement.y][tile.grid_pos.x]):
+                    if (not tile.grid_pos.y+displacement.y <= GRID_DIMS.y-1) or (
+                            tile.grid_pos.y+displacement.y > -1 and grid_map[tile.grid_pos.y+displacement.y][tile.grid_pos.x]):
                         if -1<row+displacement.y<len(self.tiles) and self.tiles[row+displacement.y][self.tiles[row].index(tile)]:
                             continue
                         move_ver = False
@@ -409,6 +420,8 @@ class Block:
         self._grid_pos += displacement
         for tile in self.get_tiles_only():
             tile.grid_pos += displacement
+            print("hi")
+            print(tile.prev_grid_pos, tile.grid_pos)
             update_grid_map_tile(tile.prev_grid_pos, tile.grid_pos)
         update_grid_map()
         print("------------")
@@ -454,6 +467,47 @@ def check_clear_lines(tiles, window, start=0,end=None,amount=GRID_DIMS.y):
             tile += 1
     return cleared
 
+def invert_grid(tiles, window):
+    global grid_map
+
+    grid_map = grid_map[::-1]
+
+    row = 0
+    start = 0
+    while row < GRID_DIMS.y:
+        if not any(grid_map[row]):
+            grid_map.insert(0,grid_map.pop(row))
+            start += 1
+        row += 1
+
+    for tile in tiles:
+        tile.grid_pos.y = start+GRID_DIMS.y-tile.grid_pos.y-1
+        tile.update(1, window, update_grid=False)
+    
+def scroll_grid(tiles, window):
+    global grid_map
+    direction = random.randint(0,1)*2-1
+
+    d = (GRID_DIMS.x - direction) % GRID_DIMS.x
+    print("direction: "+str(direction))
+    print("d: "+str(d))
+    for row in range(len(grid_map)):
+        grid_map[row] = grid_map[row][d:] + grid_map[row][:d]
+        print(grid_map[row])
+
+    for tile in tiles:
+        tile.grid_pos.x += direction
+        if not -1 < tile.grid_pos.x < GRID_DIMS.x:
+            tile.grid_pos.x = (tile.grid_pos.x + GRID_DIMS.x) % GRID_DIMS.x
+        tile.update(1, window, update_grid=False)
+
+GRID_EVENTS = LootTable(
+        LootTableItem(invert_grid,10),
+        LootTableItem(scroll_grid,20),
+        LootTableItem(None,200),
+        )
+
+
 def main():
     global falling_pos, held_keys
 
@@ -489,10 +543,12 @@ def main():
     bs.fill((255,50,50))
 
     test = TileList()
+
     block_queue = [block_factory(LAYOUTS.random_item(), test) for _ in range(4)]
-    #block_queue = [LAYOUTS[0] for _ in range(40)]
+    #block_queue = [block_factory(O,test) for _ in range(40)]
+
     current_tile = block_queue.pop(0)
-    block_factory(LAYOUTS.random_item(), test)
+
     surface_queue = [pygame.Surface((20,20))for _ in block_queue]
 
     hard_dropped = False
@@ -537,12 +593,19 @@ def main():
                 pygame.time.set_timer(lock_delay_timer, 0)
                 print("locked")
                 if current_tile:
-                    if current_tile.grid_pos.y == -1:
+                    # Game End
+                    if current_tile.grid_pos.y <= -1:
                         running = False
                         break
+
                     test += current_tile.get_tiles_only()
                     points += len(check_clear_lines(test, window,start=current_tile.grid_pos.y,amount=len(current_tile.tiles)))
                     print(points)
+
+                    grid_event = GRID_EVENTS.random_item()
+                    if grid_event:
+                        grid_event(test, window)
+
                     current_tile = block_queue.pop(0)
                     block_queue.append(block_factory(LAYOUTS.random_item(), test))
 
@@ -563,6 +626,7 @@ def main():
                 while current_tile.falling:
                     current_tile.grid_pos.y += 1
                     current_tile.update(delta_t, window, False)
+                    update_grid_map()
                 hard_dropped = True
 
         # Handle events (old form)
