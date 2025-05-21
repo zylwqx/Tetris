@@ -12,13 +12,10 @@ pygame.init()
 # Settings
 font = pygame.font.SysFont('arial', 40)
 
-VIDEO_FLAGS = pygame.HWSURFACE|pygame.DOUBLEBUF
-
-
 class Game:
     def __init__(self):
         # Display
-        self.master_window = pygame.display.set_mode(tuple(wind_size), VIDEO_FLAGS)
+        self.master_window = pygame.display.set_mode(tuple(wind_size), VIDEO_FLAGS | pygame.NOFRAME)
         self.window = self.master_window.copy()
 
         self.scenes = {
@@ -33,7 +30,8 @@ class Game:
     def switch_scene(self, new_scene):
         if new_scene in self.scenes:
             #TODO self.active_scenes[-1].exit()
-            self.active_scenes[-1] = self.scenes[new_scene]
+            self.active_scenes.clear()
+            self.active_scenes.append(self.scenes[new_scene])
             self.active_scenes[-1].enter()
 
     def popup_scene(self, new_scene):
@@ -41,7 +39,7 @@ class Game:
         self.active_scenes[-1].enter()
 
     def close_scene(self, amount=1):
-        for _ in range(min(amount, len(self.active_scenes))):
+        for _ in range(min(amount, len(self.active_scenes)-1)):
             #TODO self.active_scenes[-1].exit()
             self.active_scenes.pop()
 

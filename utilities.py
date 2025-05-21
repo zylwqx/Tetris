@@ -3,9 +3,10 @@ import time
 import functools
 from math import sqrt, floor
 import random
-
 import os
 ASSETS_PATH = os.path.join(os.path.dirname(__file__), 'assets/')
+
+VIDEO_FLAGS = pygame.HWSURFACE|pygame.DOUBLEBUF
 
 # Colours
 BK = (0, 0, 0)

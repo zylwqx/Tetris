@@ -429,7 +429,8 @@ class TetrisGame:
         self.grid.reset()
 
         self.points = 0
-        self.points_text = self.font.render("Cleared: "+str(self.points), False, W)
+        self.cleared_lines_text = self.font.render("Cleared:", True, W)
+        self.points_text = self.font.render(str(self.points), False, W)
 
         self.tiles.clear()
 
@@ -494,7 +495,7 @@ class TetrisGame:
                             self.tiles, self.surf,
                             start=self.current_tile.grid_pos.y,
                             amount=len(self.current_tile.tiles)))
-                    self.points_text = self.font.render("Cleared: "+str(self.points), False, W)
+                    self.points_text = self.font.render(str(self.points), False, W)
 
                     # Game Events
                     print(self.event_countdown)
@@ -594,7 +595,8 @@ class TetrisGame:
         self.surf.blit(self.curr_grid_event_sprite, (wind_size.x*0.8,wind_size.y*0.75))
 
         # Points
-        self.surf.blit(self.points_text, (wind_size.x*0.8,wind_size.y*0.1))
+        self.surf.blit(self.cleared_lines_text, (wind_size.x*0.8,wind_size.y*0.1))
+        self.surf.blit(self.points_text, (wind_size.x*0.8,wind_size.y*0.15))
 
         # Danger zone
         self.surf.blit(self.bs, self.danger_rect)

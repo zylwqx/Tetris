@@ -164,7 +164,6 @@ class MainMenu(Menu):
         super().draw(window)
 
 
-
 class PauseMenu(Menu):
     def __init__(self, ):
         options = [
@@ -173,7 +172,7 @@ class PauseMenu(Menu):
             {"name": "Adjust Screen", "colour": W,
              "on_select": "scene", "select_args": {"id": 2, "scene": "ScreenAdjust"}},
             {"name": "Main Menu", "colour": PB,
-             "on_select": "scene", "select_args": {"id": 2, "scene": "Main"}},
+             "on_select": "scene", "select_args": {"id": 1, "scene": "Main"}},
             {"name": "QUIT", "colour": R,
              "on_select": "scene", "select_args": {"id":-1}},
         ]
@@ -190,9 +189,9 @@ class GameOverMenu(Menu):
     def __init__(self, game):
         options = [
             {"name": "RESTART", "colour": PY,
-             "on_select": "scene", "select_args": {"id": 2, "scene": "Tetris"}},
+             "on_select": "scene", "select_args": {"id": 1, "scene": "Tetris"}},
             {"name": "Main Menu", "colour": PB,
-             "on_select": "scene", "select_args": {"id": 2, "scene": "Main"}},
+             "on_select": "scene", "select_args": {"id": 1, "scene": "Main"}},
             {"name": "QUIT", "colour": R,
              "on_select": "scene", "select_args": {"id":-1}},
         ]
@@ -233,7 +232,6 @@ class GameOverMenu(Menu):
 class ScreenAdjust:
     def __init__(self, master_window, window):
         self.master_window = master_window
-        self.VIDEO_FLAGS = pygame.HWSURFACE|pygame.DOUBLEBUF
         self.font = pygame.font.SysFont('Impact', 40)
 
         self.bg = master_window.copy()
@@ -246,7 +244,7 @@ class ScreenAdjust:
 
     def enter(self):
         print("adjusting screen")
-        self.master_window = pygame.display.set_mode(self.master_window.get_size(),self.VIDEO_FLAGS | pygame.RESIZABLE)
+        self.master_window = pygame.display.set_mode(self.master_window.get_size(),VIDEO_FLAGS | pygame.RESIZABLE)
 
     def draw(self, window):
         window.blit(self.bg, (0,0))
@@ -257,9 +255,9 @@ class ScreenAdjust:
             if event.type == pygame.VIDEORESIZE:
                 size = list(event.size)
                 size[0] = size[1]*window.get_width()/window.get_height()
-                self.master_window = pygame.display.set_mode(size, self.VIDEO_FLAGS | pygame.RESIZABLE)
+                self.master_window = pygame.display.set_mode(size, VIDEO_FLAGS | pygame.RESIZABLE)
         if Input.is_just_pressed("UI_CANCEL"):
-            self.master_window = pygame.display.set_mode(self.master_window.get_size(),self.VIDEO_FLAGS)
+            self.master_window = pygame.display.set_mode(self.master_window.get_size(),VIDEO_FLAGS | pygame.NOFRAME)
             return {"id": 3}
 
         if redraw:
