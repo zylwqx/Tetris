@@ -4,8 +4,8 @@ from utilities import *
 
 class Menu:
     def __init__(self,options, pos, font, anti_alias=True, padding=0, bg_colour=(0,0,0)):
-        self.cursor_img = pygame.image.load("cursor.png").convert_alpha()
-        self.receiver_img = pygame.image.load("cursor_receive.png").convert_alpha()
+        self.cursor_img = pygame.image.load(ASSETS_PATH+"cursor.png").convert_alpha()
+        self.receiver_img = pygame.image.load(ASSETS_PATH+"cursor_receive.png").convert_alpha()
 
         # Menu options and text style
         self.options = options
@@ -184,6 +184,50 @@ class PauseMenu(Menu):
             True,
             10,
             (0,0,0))
+
+
+class GameOverMenu(Menu):
+    def __init__(self, game):
+        options = [
+            {"name": "RESTART", "colour": PY,
+             "on_select": "scene", "select_args": {"id": 2, "scene": "Tetris"}},
+            {"name": "Main Menu", "colour": PB,
+             "on_select": "scene", "select_args": {"id": 2, "scene": "Main"}},
+            {"name": "QUIT", "colour": R,
+             "on_select": "scene", "select_args": {"id":-1}},
+        ]
+        super().__init__(
+            options,
+            "CENTERED",
+            pygame.font.SysFont("Impact", 32),
+            True,
+            10,
+            (100,20,1))
+
+        self.bg = pygame.display.get_surface().copy()
+        self.bg.set_alpha(40)
+        self.bg.fill(R)
+        self.title_font = pygame.font.SysFont("Ink free", 60)
+
+        self.game = game
+
+    def enter(self):
+        super().enter()
+        self.texts = (
+            self.font.render("Highscore: "+str(self.game.highscore), True, BK),
+            self.font.render("Score: "+str(self.game.points), True, BK),
+            self.title_font.render("GAME OVER", True, (25,0,10)))
+
+    def draw(self, window):
+        window.blit(self.bg,(0,0))
+
+        for i in range(len(self.texts)):
+            window.blit(self.texts[i],
+                (self.menu_pos.x-(self.texts[i].get_width()-self.surf.get_width())/2,
+                 self.menu_pos.y-(i+1)*self.texts[i].get_height()))
+
+        super().draw(window)
+
 
 
 class ScreenAdjust:

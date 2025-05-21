@@ -42,7 +42,7 @@ class Grid:
         else:
             self.pos = pos
 
-        tile_sprite = pygame.image.load("tile.png").convert_alpha()
+        tile_sprite = pygame.image.load(ASSETS_PATH+"tile.png").convert_alpha()
 
         self.bg.fill(W)
         for y in range(dims.y):
@@ -123,7 +123,7 @@ class Grid:
 class Tile(pygame.Rect):
     def __init__(self, grid, colour, grid_pos=Vector2(5,0), collision_list=None):
         super().__init__(0, 0, tile_size, tile_size)
-        self.sprite = pygame.image.load("tile.png").convert_alpha()
+        self.sprite = pygame.image.load(ASSETS_PATH+"tile.png").convert_alpha()
         self.colour = colour
         self.hide = False
 
@@ -316,6 +316,9 @@ class TetrisGame:
         else:
             self.pos = pos
 
+        # Font
+        self.font = pygame.font.SysFont('arial', 40)
+
         # Game Grid
         self.grid = Grid(window, "CENTERED", GRID_DIMS)
 
@@ -340,6 +343,8 @@ class TetrisGame:
             LTI(Z, 5/3), LTI(Z1, 5/3),
             LTI(S, 5/3), LTI(S1, 5/3),
             LTI(SLASH, 5), LTI(SLASH1, 5),
+            LTI(FISH, 1/2), LTI(FISH1, 1/2),
+            LTI(BOW, 1),
             )
 
         self.GRID_EVENTS = LootTable(
@@ -355,9 +360,9 @@ class TetrisGame:
             )
 
         # Spritesheets
-        invert_event_spritesheet = SpriteSheet("invert_anim.png")
-        shift_event_spritesheet = SpriteSheet("shift_anim.png")
-        queue_change_event_spritesheet = SpriteSheet("queue_change_anim.png")
+        invert_event_spritesheet = SpriteSheet(ASSETS_PATH+"invert_anim.png")
+        shift_event_spritesheet = SpriteSheet(ASSETS_PATH+"shift_anim.png")
+        queue_change_event_spritesheet = SpriteSheet(ASSETS_PATH+"queue_change_anim.png")
 
         # Animations
         scale_grid_event = 4
@@ -391,9 +396,17 @@ class TetrisGame:
 
         # Reset game values
         self.reset()
+        self.highscore = 0
 
     def enter(self):
         self.reset()
+        try:
+            with open ("highscore.txt",'r') as f:
+                self.highscore = int(f.read().strip())
+        except (FileNotFoundError, ValueError):
+            print("File corrupted. Creating new savefile...")
+            with open("highscore.txt", 'w') as f:
+                f.write('0')
 
     def reset(self):
         # Timers
@@ -403,11 +416,8 @@ class TetrisGame:
         self.p_timer = player_move
     
         self.event_distance = 15
-        self.event_distance = 1
         self.event_countdown = self.event_distance
-        # TODO
         # Event
-        self.font = pygame.font.SysFont('arial', 40)
         self.countdown_text = self.font.render("Next: "+str(self.event_countdown), False, W)
         self.grid_event = self.GRID_EVENTS.random_item()
         
@@ -419,6 +429,7 @@ class TetrisGame:
         self.grid.reset()
 
         self.points = 0
+        self.points_text = self.font.render("Cleared: "+str(self.points), False, W)
 
         self.tiles.clear()
 
@@ -467,9 +478,14 @@ class TetrisGame:
                 pygame.time.set_timer(lock_delay_timer, 0)
                 print("locked")
                 if self.current_tile:
-                    # Game End
+                    # GameOver 
                     if self.current_tile.grid_pos.y <= -1:
-                        return {"id": -1}
+                        if self.points > self.highscore:
+                            self.highscore = self.points
+                            with open ("highscore.txt", 'w') as f:
+                                f.write(str(self.highscore))
+
+                        return {"id": 1, "scene": "GameOver"}
 
                     # Points/clear tiles
                     self.tiles += self.current_tile.get_tiles_only()
@@ -478,8 +494,7 @@ class TetrisGame:
                             self.tiles, self.surf,
                             start=self.current_tile.grid_pos.y,
                             amount=len(self.current_tile.tiles)))
-
-                    print(self.points)
+                    self.points_text = self.font.render("Cleared: "+str(self.points), False, W)
 
                     # Game Events
                     print(self.event_countdown)
@@ -577,6 +592,9 @@ class TetrisGame:
         # Event Countdown
         self.surf.blit(self.countdown_text, (wind_size.x*0.8,wind_size.y*0.7))
         self.surf.blit(self.curr_grid_event_sprite, (wind_size.x*0.8,wind_size.y*0.75))
+
+        # Points
+        self.surf.blit(self.points_text, (wind_size.x*0.8,wind_size.y*0.1))
 
         # Danger zone
         self.surf.blit(self.bs, self.danger_rect)

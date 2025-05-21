@@ -4,6 +4,9 @@ import functools
 from math import sqrt, floor
 import random
 
+import os
+ASSETS_PATH = os.path.join(os.path.dirname(__file__), 'assets/')
+
 # Colours
 BK = (0, 0, 0)
 W = (255, 255, 255)
