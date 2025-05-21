@@ -87,10 +87,6 @@ class Menu:
                 (self.padding, blit_pos_y))
 
         # Cursor
-#            self.surf.blit(
-#                self.receiver_img,
-#                (self.rec_rect.left, blit_pos_y))
-
         self.surf.blit(
             self.receiver_img,
             (self.rec_rect.left, self.cursor_rect.top))
@@ -145,6 +141,30 @@ class Menu:
         return 0
 
 
+class MainMenu(Menu):
+    def __init__(self):
+        options = [
+            {"name": "Play", "colour": G,
+             "on_select": "scene", "select_args": {"id": 1, "scene": "Tetris"}},
+            {"name": "Adjust Screen", "colour": W,
+             "on_select": "scene", "select_args": {"id": 2, "scene": "ScreenAdjust"}},
+            {"name": "QUIT", "colour": R,
+             "on_select": "scene", "select_args": {"id":-1}},
+        ]
+        super().__init__(
+            options,
+            "CENTERED",
+            pygame.font.SysFont("Impact", 42),
+            True,
+            10,
+            BK)
+
+    def draw(self, window):
+        window.fill(BK)
+        super().draw(window)
+
+
+
 class PauseMenu(Menu):
     def __init__(self, ):
         options = [
@@ -152,6 +172,8 @@ class PauseMenu(Menu):
              "on_select": "scene", "select_args": {"id": 3}},
             {"name": "Adjust Screen", "colour": W,
              "on_select": "scene", "select_args": {"id": 2, "scene": "ScreenAdjust"}},
+            {"name": "Main Menu", "colour": PB,
+             "on_select": "scene", "select_args": {"id": 2, "scene": "Main"}},
             {"name": "QUIT", "colour": R,
              "on_select": "scene", "select_args": {"id":-1}},
         ]
@@ -174,7 +196,7 @@ class ScreenAdjust:
         self.bg.fill(BK)
         self.bg.set_alpha(160)
 
-        self.text = self.font.render("Adjust Screen Size (Press [ESCAPE] when done)", True, W)
+        self.text = self.font.render("Adjust Screen (Press [ESCAPE] when done)", True, W)
         self.text_rect = self.text.get_rect()
         self.text_rect.center = master_window.get_rect().center
 

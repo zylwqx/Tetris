@@ -1,7 +1,5 @@
 import pygame
 import random
-import time
-from math import ceil
 
 from utilities import *
 LTI = LootTableItem
@@ -321,10 +319,13 @@ class TetrisGame:
         # Game Grid
         self.grid = Grid(window, "CENTERED", GRID_DIMS)
 
+        # Tiles init
+        self.tiles = TileList()
+
         # Warning zone
         self.danger_rect = pygame.Rect(
-            (self.grid.pos.x,self.grid.pos.y-tile_size),
-            (self.grid.dims.x*tile_size, tile_size))
+            (self.grid.pos.x,self.grid.pos.y-2*tile_size),
+            (self.grid.dims.x*tile_size, 2*tile_size))
         self.bs = pygame.Surface(self.danger_rect.size)
         self.bs.set_alpha(100)
         self.bs.fill((255,50,50))
@@ -342,35 +343,51 @@ class TetrisGame:
             )
 
         self.GRID_EVENTS = LootTable(
-            LootTableItem({"id": 0, "function": self.grid.invert_grid, "args": []},10),
-            LootTableItem({"id": 1, "function": self.grid.scroll_grid, "args": [-1]},20),
-            LootTableItem({"id": 2, "function": self.grid.scroll_grid, "args": [1]},20),
+            LootTableItem({"id": 0, "function": self.grid.invert_grid,
+                           "args": [self.tiles, self.surf]}, 10),
+            LootTableItem({"id": 1, "function": self.grid.scroll_grid,
+                           "args": [self.tiles, self.surf, -1]},20),
+            LootTableItem({"id": 2, "function": self.grid.scroll_grid,
+                           "args": [self.tiles, self.surf, 1]}, 20),
+            LootTableItem({"id": 3, "function": self.extend_queue, "args": []},2),
+            LootTableItem({"id": 4, "function": self.shorten_queue, "args": []},2),
+            LootTableItem({"id": 5, "function": self.gravity_up, "args": [1.4]},5),
             )
 
         # Spritesheets
         invert_event_spritesheet = SpriteSheet("invert_anim.png")
         shift_event_spritesheet = SpriteSheet("shift_anim.png")
+        queue_change_event_spritesheet = SpriteSheet("queue_change_anim.png")
 
         # Animations
         scale_grid_event = 4
-        invert_event_sprites = list(map(
-            lambda x: pygame.transform.scale_by(x, scale_grid_event),
-            invert_event_spritesheet.load_strip((0,0,32,32),3)))
-        lshift_event_sprites = list(map(
-            lambda x: pygame.transform.scale_by(x, scale_grid_event),
-            shift_event_spritesheet.images_at(
-                ((0,0,32,32),(48,0,32,32)))))
-        rshift_event_sprites = list(map(
-            lambda x: pygame.transform.scale_by(x, scale_grid_event),
-            shift_event_spritesheet.images_at(
-                ((64,0,32,32),(16,0,32,32)))))
+        event_sprites = [
+            list(map(
+                lambda x: pygame.transform.scale_by(x, scale_grid_event),
+                invert_event_spritesheet.load_strip((0,0,32,32),3))),
+            list(map(
+                lambda x: pygame.transform.scale_by(x, scale_grid_event),
+                shift_event_spritesheet.images_at(
+                    ((0,0,32,32),(48,0,32,32))))),
+            list(map(
+                lambda x: pygame.transform.scale_by(x, scale_grid_event),
+                shift_event_spritesheet.images_at(
+                ((64,0,32,32),(16,0,32,32))))),
+            list(map(
+                lambda x: pygame.transform.scale_by(x, scale_grid_event),
+                queue_change_event_spritesheet.load_strip((0,0,32,32),3))),
+            list(map(
+                lambda x: pygame.transform.scale_by(x, scale_grid_event),
+                queue_change_event_spritesheet.load_strip((0,32,32,32),3))),
+            list(map(
+                lambda x: pygame.transform.scale_by(x, scale_grid_event),
+                shift_event_spritesheet.load_strip((0,32,32,32),2))),
+            ]
 
         self.curr_grid_event_sprite = None
-        self.grid_event_anims = [
-                Animation(self, "curr_grid_event_sprite", invert_event_sprites, 3, True),
-                Animation(self, "curr_grid_event_sprite", lshift_event_sprites, 2, True),
-                Animation(self, "curr_grid_event_sprite", rshift_event_sprites, 2, True),
-                ]
+        self.grid_event_anims = list(map(
+            lambda x: Animation(self, "curr_grid_event_sprite", x, len(x), True),
+            event_sprites))
 
         # Reset game values
         self.reset()
@@ -381,10 +398,12 @@ class TetrisGame:
     def reset(self):
         # Timers
         self.tps_timer = 0
-        self.g_timer = gravity
+        self.gravity = gravity
+        self.g_timer = self.gravity
         self.p_timer = player_move
     
         self.event_distance = 15
+        self.event_distance = 1
         self.event_countdown = self.event_distance
         # TODO
         # Event
@@ -401,7 +420,7 @@ class TetrisGame:
 
         self.points = 0
 
-        self.tiles = TileList()
+        self.tiles.clear()
 
         self.block_queue = [
                 Block.factory(self.LAYOUTS.random_item(),self.grid, self.tiles)
@@ -411,6 +430,26 @@ class TetrisGame:
         self.surface_queue = [pygame.Surface((20,20)) for _ in self.block_queue]
     
         self.hard_dropped = False
+
+    def gravity_up(self, modifier=1.15):
+        self.gravity = max(1, self.gravity/modifier)
+
+    def extend_queue(self, amount=1):
+        if amount < 0:
+            raise ValueError("expected: 0 <= int(amount); received "+str(amount))
+        for i in range(amount):
+            self.block_queue.append(
+                Block.factory(self.LAYOUTS.random_item(),self.grid, self.tiles))
+            self.surface_queue.append(self.surface_queue[0].copy())
+
+    def shorten_queue(self, amount=1):
+        if amount < 0:
+            raise ValueError("expected: 0 <= int(amount); received "+str(amount))
+        for i in range(amount):
+            if len(self.block_queue) <= 1:
+                break
+            self.block_queue.pop()
+            self.surface_queue.pop()
 
     def draw(self, window):
         window.blit(self.surf, tuple(self.pos))
@@ -446,9 +485,12 @@ class TetrisGame:
                     print(self.event_countdown)
                     self.event_countdown -= 1
                     if self.event_countdown < 1:
-                        self.event_distance *= 0.95
+                        # Switch event and decrease time till next event
+                        self.event_distance = max(1, 0.9*self.event_distance)
                         self.event_countdown = round(self.event_distance)
-                        self.grid_event["function"](self.tiles, self.surf, *self.grid_event["args"])
+
+                        # Call event function
+                        self.grid_event["function"](*self.grid_event["args"])
 
                         self.grid_event_anims[self.grid_event["id"]].stop()
                         self.grid_event = self.GRID_EVENTS.random_item()
@@ -493,7 +535,7 @@ class TetrisGame:
             self.g_timer -= 1
             self.p_timer -= 1
             if self.g_timer <= 0:
-                self.g_timer = gravity
+                self.g_timer = self.gravity
                 if self.current_tile:
                     self.current_tile.grid_pos.y += 1
 

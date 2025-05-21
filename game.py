@@ -1,12 +1,10 @@
 import pygame
-import random
 import time
-from math import ceil
 
 from utilities import *
 from Layouts import *
 from Tetris import *
-from Pause import *
+from Menu import *
 
 pygame.init()
 
@@ -23,11 +21,12 @@ class Game:
         self.window = self.master_window.copy()
 
         self.scenes = {
+            "Main": MainMenu(),
             "Tetris": TetrisGame(self.window,"CENTERED"),
             "Pause": PauseMenu(),
             "ScreenAdjust": ScreenAdjust(self.master_window, self.window),}
 
-        self.active_scenes = [self.scenes["Tetris"]]
+        self.active_scenes = [self.scenes["Main"]]
 
     def switch_scene(self, new_scene):
         if new_scene in self.scenes:
