@@ -351,7 +351,7 @@ class TetrisGame:
             LTI(Z, 5/3), LTI(Z1, 5/3),
             LTI(S, 5/3), LTI(S1, 5/3),
             LTI(SLASH, 5), LTI(SLASH1, 5),
-            LTI(FISH, 1/4), LTI(FISH1, 1/4), LTI(FISH2, 1/4), LTI(FISH3, 1/4),
+            LTI(FISH, 1/2), LTI(FISH1, 1/2),
             LTI(BOW, 1),
             )
 
