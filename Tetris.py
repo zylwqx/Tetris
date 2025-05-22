@@ -586,6 +586,7 @@ class TetrisGame:
 
         # Block Queue
         temp_height = 50
+        #self.surf.blit(self.)
         for i in range(len(self.block_queue)):
             self.block_queue[i].draw(self.surf, self.surface_queue[i], (50,temp_height))
             temp_height += self.block_queue[i].icon_surf.get_height()*(self.surface_queue[i].get_height()/tile_size) + 20
