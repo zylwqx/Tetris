@@ -25,7 +25,7 @@ class Game:
             "ScreenAdjust": ScreenAdjust(self.master_window, self.window),}
         self.scenes["GameOver"]=  GameOverMenu(self.scenes["Tetris"])
 
-        self.active_scenes = [self.scenes["Tetris"]]
+        self.active_scenes = [self.scenes["Main"]]
 
     def switch_scene(self, new_scene):
         if new_scene in self.scenes:

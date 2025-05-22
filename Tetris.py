@@ -42,9 +42,10 @@ class Grid:
         else:
             self.pos = pos
 
-        tile_sprite = pygame.image.load(ASSETS_PATH+"tile.png").convert_alpha()
+        self.tile_sprite = pygame.image.load(ASSETS_PATH+"tile.png").convert_alpha()
 
-        self.bg.fill(W)
+        self.colour = colour
+        self.bg.fill(colour)
         for y in range(dims.y):
             for x in range(dims.x):
                 self.bg.blit(tile_sprite, (x*tile_size,y*tile_size))
@@ -68,6 +69,13 @@ class Grid:
         self.map = list(map(
             lambda x: list(map(
                 lambda y: int(bool(y)), x)), self.map))
+
+    def draw(self, window):
+        pygame.draw.rect(window, self.colour)
+        for y in range(self.dims.y):
+            for x in range(self.dims.x):
+                window.blit(tile_sprite, (self.pos.x+x*tile_size,self.pos.y+y*tile_size))
+
 
     def clear_lines(self, tiles, window, start=0,end=None,amount=1):
         cleared = []
@@ -492,7 +500,7 @@ class TetrisGame:
                     self.tiles += self.current_tile.get_tiles_only()
                     self.points += len(
                         self.grid.clear_lines(
-                            self.tiles, self.surf,
+                            self.tiles, window,
                             start=self.current_tile.grid_pos.y,
                             amount=len(self.current_tile.tiles)))
                     self.points_text = self.font.render(str(self.points), False, W)
@@ -539,7 +547,7 @@ class TetrisGame:
             if Input.is_just_pressed("A_UP"):
                 while self.current_tile.falling:
                     self.current_tile.grid_pos.y += 1
-                    self.current_tile.update(delta_t, self.surf, False)
+                    self.current_tile.update(delta_t, window, False)
                     self.grid.update_map()
                 self.hard_dropped = True
 
@@ -572,38 +580,40 @@ class TetrisGame:
         self.grid.update_map()
 
         # Draw
-        self.surf.fill(BK)
+        window.fill(BK)
+
+        self.grid.draw(window)
 
         # draw grid
-        self.surf.blit(self.grid.bg, tuple(self.grid.pos))
+        window.blit(self.grid.bg, tuple(self.grid.pos))
 
         # update current_tile
         if self.current_tile:
-            self.current_tile.update(delta_t, self.surf)
+            self.current_tile.update(delta_t, window)
 
         # Draw idle tiles
-        self.tiles.draw(self.surf)
+        self.tiles.draw(window)
 
         # Block Queue
         temp_height = 50
-        #self.surf.blit(self.)
+        #window.blit(self.)
         for i in range(len(self.block_queue)):
-            self.block_queue[i].draw(self.surf, self.surface_queue[i], (50,temp_height))
-            temp_height += self.block_queue[i].icon_surf.get_height()*(self.surface_queue[i].get_height()/tile_size) + 20
+            self.block_queue[i].draw(window, self.surface_queue[i], (50,temp_height))
+            temp_height += self.block_queue[i].icon_surf.get_height()*(windowace_queue[i].get_height()/tile_size) + 20
 
         # Event Countdown
-        self.surf.blit(self.countdown_text, (wind_size.x*0.8,wind_size.y*0.7))
-        self.surf.blit(self.curr_grid_event_sprite, (wind_size.x*0.8,wind_size.y*0.75))
+        window.blit(self.countdown_text, (wind_size.x*0.8,wind_size.y*0.7))
+        window.blit(self.curr_grid_event_sprite, (wind_size.x*0.8,wind_size.y*0.75))
 
         # Points
-        self.surf.blit(self.cleared_lines_text, (wind_size.x*0.8,wind_size.y*0.1))
-        self.surf.blit(self.points_text, (wind_size.x*0.8,wind_size.y*0.15))
+        window.blit(self.cleared_lines_text, (wind_size.x*0.8,wind_size.y*0.1))
+        window.blit(self.points_text, (wind_size.x*0.8,wind_size.y*0.15))
 
         # Danger zone
-        self.surf.blit(self.bs, self.danger_rect)
+        window.blit(self.bs, self.danger_rect)
 
-        if redraw:
-            self.draw(window)
+#        if redraw:
+#            self.draw(window)
 
         return 0
 
