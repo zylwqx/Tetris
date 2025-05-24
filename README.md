@@ -16,7 +16,7 @@ or
 `pip3 install pygame`
 for Mac and Linux
 * download either the windows or mac version depending on your os
-** (mac version also works on windows but does not allow screen resizing)  
+  * (mac version also works on windows but does not allow screen resizing)  
 * Run the Lu_Alex_Poon_Kevin_curstris.py file  
 E.G:
 ```py
