@@ -6,6 +6,8 @@ class Menu:
     def __init__(self,options, pos, font, anti_alias=True, padding=0, bg_colour=(0,0,0)):
         self.cursor_img = pygame.image.load(ASSETS_PATH+"cursor.png").convert_alpha()
         self.receiver_img = pygame.image.load(ASSETS_PATH+"cursor_receive.png").convert_alpha()
+        self.enter_sound = pygame.mixer.Sound(ASSETS_PATH+"pickupCoin.wav")
+        self.click_sound = pygame.mixer.Sound(ASSETS_PATH+"blipSelect.wav")
 
         # Menu options and text style
         self.options = options
@@ -68,6 +70,8 @@ class Menu:
         self.cursor_anim.reset(True)
         self.set_cursor_pos()
 
+        self.enter_sound.play()
+
     def set_cursor_pos(self):
         self.cursor_rect.top = self.selected*(self.text_size.y+self.padding)+self.padding
         self.cursor_tween.start.y = self.cursor_rect.top
@@ -103,14 +107,18 @@ class Menu:
             if Input.is_just_pressed("A_UP"):
                 self.selected = max(0,self.selected-1)
                 self.set_cursor_pos()
+                self.click_sound.play()
+
             elif Input.is_just_pressed("A_DOWN"):
                 print("down")
                 self.selected = min(len(self.options)-1,self.selected+1)
                 self.set_cursor_pos()
+                self.click_sound.play()
 
             elif Input.is_just_pressed("UI_CANCEL"):
                 self.selected = 0
                 self.set_cursor_pos()
+                self.click_sound.play()
                 return {"id": 3}
 
             elif Input.is_just_pressed("UI_SELECT"):
@@ -148,6 +156,8 @@ class MainMenu(Menu):
              "on_select": "scene", "select_args": {"id": 1, "scene": "Tetris"}},
             {"name": "Adjust Screen", "colour": W,
              "on_select": "scene", "select_args": {"id": 2, "scene": "ScreenAdjust"}},
+            {"name": "Credits", "colour": W,
+             "on_select": "scene", "select_args": {"id": 2, "scene": "Credits"}},
             {"name": "QUIT", "colour": R,
              "on_select": "scene", "select_args": {"id":-1}},
         ]
@@ -164,10 +174,13 @@ class MainMenu(Menu):
         self.title_rect.center = pygame.display.get_surface().get_rect().center
         self.title_rect.top = pygame.display.get_window_size()[1]*0.15
 
+        self.help_text = pygame.font.SysFont("Impact", 26).render("Controls: W,A,S,D or UP,DOWN,LEFT,RIGHT - That's it!", self.anti_alias, R)
+
     def draw(self, window):
         window.fill(BK)
         super().draw(window)
         window.blit(self.title, self.title_rect)
+        window.blit(self.help_text, (20,20))
 
 
 class PauseMenu(Menu):
@@ -268,6 +281,44 @@ class ScreenAdjust:
 
         if redraw:
             self.draw(window)
+
+
+class Credits(Menu):
+    def __init__(self):
+        super().__init__(
+            [{"name": "Back", "colour": R,
+             "on_select": "scene", "select_args": {"id": 3}},],
+            Vector2(20,20),
+            pygame.font.SysFont("Impact", 26),
+            True,
+            10,
+            (100,20,1))
+
+        self.help = self.font.render("(ESCAPE) to go back", True, W)
+
+        self.credits = [
+                f"Developers:",
+                f"Alex Lu",
+                f"Kevin Poon",
+                f"Art:",
+                f"Alex Lu",
+                f"Music:",
+                f"Game Over - Danjiel Zambo",
+                f"Sound effects:",
+                f"https://onlinesound.net/8bit-sfx-generator#google_vignette",
+                f"https://pixabay.com/sound-effects/search/click/"]
+        self.texts = [self.font.render(text, True, (20,200,180)) for text in self.credits]
+        self.text_rect = self.texts[8].get_rect()
+        self.text_rect.height *= 10
+        self.text_rect.center = pygame.display.get_surface().get_rect().center
+        self.text_rect.height /= 10
+
+    def draw(self, window):
+        window.fill(BK)
+        super().draw(window)
+        for text in range(len(self.texts)):
+            window.blit(self.texts[text],
+                (self.text_rect.x, self.text_rect.y+(self.text_rect.height+10)*text))
 
 
 if __name__ == "__main__":

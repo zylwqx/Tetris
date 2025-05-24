@@ -10,7 +10,7 @@ from Menu import *
 pygame.init()
 
 # Settings
-font = pygame.font.SysFont('arial', 40)
+bg_music = pygame.mixer.Sound(ASSETS_PATH+"game-over-danijel-zambo-main-version-1394-02-03.mp3")
 
 class Game:
     def __init__(self):
@@ -22,6 +22,7 @@ class Game:
             "Main": MainMenu(),
             "Tetris": TetrisGame(self.window,"CENTERED"),
             "Pause": PauseMenu(),
+            "Credits": Credits(),
             "ScreenAdjust": ScreenAdjust(self.master_window, self.window),}
         self.scenes["GameOver"]=  GameOverMenu(self.scenes["Tetris"])
 
@@ -52,6 +53,7 @@ class Game:
         clock = pygame.time.Clock()
 
         self.active_scenes[-1].enter()
+        bg_music.play(-1)
         while self.running:
             clock.tick(30)
             # Delta time
@@ -102,4 +104,3 @@ try:
     main()
 finally:
     pygame.quit()
-    input("\033[31m(Enter)")

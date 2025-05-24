@@ -319,6 +319,11 @@ class TetrisGame:
         # Font
         self.font = pygame.font.SysFont('arial', 40)
 
+        # Audio
+        self.lock_sound = pygame.mixer.Sound(ASSETS_PATH+"laserShoot.mp3")
+        self.clear_sound = pygame.mixer.Sound(ASSETS_PATH+"powerUp.wav")
+        self.event_sound = pygame.mixer.Sound(ASSETS_PATH+"explosion.wav")
+
         # Game Grid
         self.grid = Grid(window, "CENTERED", GRID_DIMS)
 
@@ -475,6 +480,7 @@ class TetrisGame:
 
             # Block locks
             if event.type == lock_delay_timer or self.hard_dropped:
+                self.lock_sound.play()
                 self.hard_dropped = False
                 pygame.time.set_timer(lock_delay_timer, 0)
                 print("locked")
@@ -490,17 +496,21 @@ class TetrisGame:
 
                     # Points/clear tiles
                     self.tiles += self.current_tile.get_tiles_only()
-                    self.points += len(
+                    cleared = len(
                         self.grid.clear_lines(
                             self.tiles, self.surf,
                             start=self.current_tile.grid_pos.y,
                             amount=len(self.current_tile.tiles)))
+                    if cleared:
+                        self.clear_sound.play()
+                    self.points += cleared
                     self.points_text = self.font.render(str(self.points), False, W)
 
                     # Game Events
                     print(self.event_countdown)
                     self.event_countdown -= 1
                     if self.event_countdown < 1:
+                        self.event_sound.play()
                         # Switch event and decrease time till next event
                         self.event_distance = max(1, 0.9*self.event_distance)
                         self.event_countdown = round(self.event_distance)

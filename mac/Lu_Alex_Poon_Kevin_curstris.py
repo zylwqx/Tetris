@@ -100,4 +100,3 @@ try:
     main()
 finally:
     pygame.quit()
-    input("\033[31m(Enter)")
