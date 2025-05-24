@@ -159,9 +159,15 @@ class MainMenu(Menu):
             10,
             BK)
 
+        self.title = pygame.image.load(ASSETS_PATH+"title.png").convert_alpha()
+        self.title_rect = self.title.get_rect()
+        self.title_rect.center = pygame.display.get_surface().get_rect().center
+        self.title_rect.top = pygame.display.get_window_size()[1]*0.15
+
     def draw(self, window):
         window.fill(BK)
         super().draw(window)
+        window.blit(self.title, self.title_rect)
 
 
 class PauseMenu(Menu):
@@ -239,16 +245,18 @@ class ScreenAdjust:
         self.bg.set_alpha(160)
 
         self.text = self.font.render("Adjust Screen (Press [ESCAPE] when done)", True, W)
+        self.subtext = self.font.render("Window resize unavailable on mac", True, W)
         self.text_rect = self.text.get_rect()
         self.text_rect.center = master_window.get_rect().center
 
     def enter(self):
         print("adjusting screen")
-        self.master_window = pygame.display.set_mode(self.master_window.get_size(),VIDEO_FLAGS | pygame.RESIZABLE)
+        self.master_window = pygame.display.set_mode(self.master_window.get_size(),VIDEO_FLAGS)
 
     def draw(self, window):
         window.blit(self.bg, (0,0))
         window.blit(self.text, self.text_rect)
+        window.blit(self.subtext, (self.text_rect.left, self.text_rect.bottom))
 
     def update(self, delta_t, window, events, redraw=True):
         for event in events:
