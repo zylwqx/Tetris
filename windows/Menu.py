@@ -174,13 +174,15 @@ class MainMenu(Menu):
         self.title_rect.center = pygame.display.get_surface().get_rect().center
         self.title_rect.top = pygame.display.get_window_size()[1]*0.15
 
-        self.help_text = pygame.font.SysFont("Impact", 26).render("Controls: W,A,S,D or UP,DOWN,LEFT,RIGHT - That's it!", self.anti_alias, R)
+        self.help_text = pygame.font.SysFont("Impact", 26).render("Controls: W,A,S,D or UP,DOWN,LEFT,RIGHT to move", self.anti_alias, R)
+        self.help_text2 = pygame.font.SysFont("Impact", 26).render("          SPACE or RETURN to select an option - That's it!", self.anti_alias, R)
 
     def draw(self, window):
         window.fill(BK)
         super().draw(window)
         window.blit(self.title, self.title_rect)
         window.blit(self.help_text, (20,20))
+        window.blit(self.help_text2, (20,20+self.help_text.get_height()))
 
 
 class PauseMenu(Menu):
