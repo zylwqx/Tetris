@@ -19,12 +19,12 @@ for Mac and Linux
   * (mac version also works on windows but does not allow screen resizing)  
 * Run the Lu_Alex_Poon_Kevin_curstris.py file  
 E.G:
-```py
+```bash
 cd windows  
 python Lu_Alex_Poon_Kevin_curstris.py
 ```
 E.G:
-```py
+```bash
 cd mac  
 python3 Lu_Alex_Poon_Kevin_curstris.py
 ```
