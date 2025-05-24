@@ -3,7 +3,7 @@
 Tetris (without) a twist!
 
 **Tired of complex movements? (what da hail is a T-Spin?)**  
-**Want some fresh challenges? (just speeding up the game is lame ;-;)  
+**Want some fresh challenges? (just speeding up the game is lame ;-;)**  
 **Bored of the same old colours, same old, song, and SAME OLD BLOCKS?**
 
 PLAY CURSTRIS!!!!!
